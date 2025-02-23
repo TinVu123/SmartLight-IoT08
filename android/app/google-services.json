@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "894804330206",
+    "firebase_url": "https://light-study-default-rtdb.firebaseio.com",
+    "project_id": "light-study",
+    "storage_bucket": "light-study.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:894804330206:android:e9b6dcf92a73fb5ebe644f",
+        "android_client_info": {
+          "package_name": "com.example.denhoc"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLBvUnlFR5RW50kHgfzg-SNVIx6vj498E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
