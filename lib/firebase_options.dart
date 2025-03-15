@@ -50,21 +50,22 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBLBvUnlFR5RW50kHgfzg-SNVIx6vj498E',
-    appId: '1:894804330206:android:e9b6dcf92a73fb5ebe644f',
-    messagingSenderId: '894804330206',
-    projectId: 'light-study',
-    databaseURL: 'https://light-study-default-rtdb.firebaseio.com',
-    storageBucket: 'light-study.firebasestorage.app',
+    apiKey: 'AIzaSyCKM6c2dVnp2gfnOC9e-Q9mZ1WMQxfrw4s',
+    appId: '1:246516688633:android:83f92c4b486d016e9de428',
+    messagingSenderId: '246516688633',
+    projectId: 'iot-nhom08',
+    databaseURL: 'https://iot-nhom08-default-rtdb.asia-southeast1.firebasedatabase.app',
+    storageBucket: 'iot-nhom08.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCRLaLgkNNAj8lHdSVZF-v_LqxT3np2F_M',
-    appId: '1:894804330206:ios:c5ffab489a2df29cbe644f',
-    messagingSenderId: '894804330206',
-    projectId: 'light-study',
-    databaseURL: 'https://light-study-default-rtdb.firebaseio.com',
-    storageBucket: 'light-study.firebasestorage.app',
+    apiKey: 'AIzaSyCex45m7XA3neu7c1ILd_JZsteS4AbDg5w',
+    appId: '1:246516688633:ios:e0a8638a510865109de428',
+    messagingSenderId: '246516688633',
+    projectId: 'iot-nhom08',
+    databaseURL: 'https://iot-nhom08-default-rtdb.asia-southeast1.firebasedatabase.app',
+    storageBucket: 'iot-nhom08.firebasestorage.app',
     iosBundleId: 'com.example.denhoc',
   );
+
 }

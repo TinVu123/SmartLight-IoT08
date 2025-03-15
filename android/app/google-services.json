@@ -1,14 +1,14 @@
 {
   "project_info": {
-    "project_number": "894804330206",
-    "firebase_url": "https://light-study-default-rtdb.firebaseio.com",
-    "project_id": "light-study",
-    "storage_bucket": "light-study.firebasestorage.app"
+    "project_number": "246516688633",
+    "firebase_url": "https://iot-nhom08-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "iot-nhom08",
+    "storage_bucket": "iot-nhom08.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:894804330206:android:e9b6dcf92a73fb5ebe644f",
+        "mobilesdk_app_id": "1:246516688633:android:83f92c4b486d016e9de428",
         "android_client_info": {
           "package_name": "com.example.denhoc"
         }
@@ -16,7 +16,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBLBvUnlFR5RW50kHgfzg-SNVIx6vj498E"
+          "current_key": "AIzaSyCKM6c2dVnp2gfnOC9e-Q9mZ1WMQxfrw4s"
         }
       ],
       "services": {

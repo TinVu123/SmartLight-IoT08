@@ -1,42 +1,50 @@
 import 'package:flutter/material.dart';
 
 class MySwitchButton extends StatefulWidget {
-  const MySwitchButton({super.key});
+  final String type;
+
+  const MySwitchButton({super.key, required this.type,});
 
   @override
   State<MySwitchButton> createState() => _SwitchExampleState();
 }
 
 class _SwitchExampleState extends State<MySwitchButton> {
-  bool light = true;
+  bool light = false; // Kết nối với firebase để lấy về trạng thái( nên truyền từ ngoài vào)
 
   @override
   Widget build(BuildContext context) {
-    // This object sets amber as the track color when the switch is selected.
-    // Otherwise, it resolves to null and defers to values from the theme data.
     const WidgetStateProperty<Color?> trackColor = WidgetStateProperty<Color?>.fromMap(
       <WidgetStatesConstraint, Color>{WidgetState.selected: Colors.blueAccent},
     );
-    // This object sets the track color based on two WidgetState attributes.
-    // If neither state applies, it resolves to null.
     final WidgetStateProperty<Color?> overlayColor = WidgetStateProperty<Color?>.fromMap(
       <WidgetState, Color>{
         WidgetState.selected: Colors.lightGreenAccent,
+
         WidgetState.disabled: Colors.grey.shade400,
+
       },
     );
 
     return Switch(
-      // This bool value toggles the switch.
       value: light,
       overlayColor: overlayColor,
       trackColor: trackColor,
       thumbColor: const WidgetStatePropertyAll<Color>(Colors.white),
       onChanged: (bool value) {
-        // This is called when the user toggles the switch.
         setState(() {
-          light = value;
+          light = !light;
         });
+        if(widget.type == 'light'){
+            print('${widget.type}: $light' );
+        }else if(widget.type == 'brightness'){
+            print('${widget.type}: $light' );
+        }else if(widget.type == 'promodo'){
+            print('${widget.type}: $light' );
+        }else if(widget.type == 'notification'){
+            print('${widget.type}: $light' );
+        }
+
       },
     );
   }

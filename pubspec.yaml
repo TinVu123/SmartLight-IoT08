@@ -1,5 +1,5 @@
-name: denhoc
-description: "A new Flutter project."
+name: smartlight
+description: "A new Flutter project for smart lighting control."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -39,6 +39,7 @@ dependencies:
   firebase_database: ^11.3.3
   google_fonts: ^6.2.1
   interactive_slider: ^0.5.1
+  numberpicker: ^2.1.2
 
 dev_dependencies:
   flutter_test:
@@ -93,3 +94,4 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+

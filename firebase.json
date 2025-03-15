@@ -1,1 +1,38 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"light-study","appId":"1:894804330206:android:e9b6dcf92a73fb5ebe644f","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"light-study","configurations":{"android":"1:894804330206:android:e9b6dcf92a73fb5ebe644f","ios":"1:894804330206:ios:c5ffab489a2df29cbe644f"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "iot-nhom08",
+          "appId": "1:246516688633:android:83f92c4b486d016e9de428",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "iot-nhom08",
+          "configurations": {
+            "android": "1:246516688633:android:83f92c4b486d016e9de428",
+            "ios": "1:246516688633:ios:e0a8638a510865109de428"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "redeploy": [
+    "npm --prefix \"%RESOURCE_DIR%\" run lint"
+]
+    }
+  ]
+}

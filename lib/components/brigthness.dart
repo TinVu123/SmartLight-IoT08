@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:interactive_slider/interactive_slider.dart';
 
-class Brigthness extends StatefulWidget {
-  const Brigthness({super.key});
+class Brightness extends StatefulWidget {
+  final bool autoBrightness;
+  const Brightness({super.key, required this.autoBrightness});
 
   @override
-  State<Brigthness> createState() => _BrigthnessState();
+  State<Brightness> createState() => _BrightnessState();
 }
-class _BrigthnessState extends State<Brigthness> {
+class _BrightnessState extends State<Brightness> {
   double _value = 0; // Chuyển biến vào trong _BrigthnessState
 
   @override
   Widget build(BuildContext context) {
     return InteractiveSlider(
-      // startIcon: const Icon(Icons.sunny,color: Colors.yellow,),
+      startIcon: const Icon(Icons.sunny,color: Colors.yellow,),
       // centerIcon: const Text('Center'),
       // endIcon: const Icon(Icons.sunny),
       min: 1.0,
@@ -21,13 +22,11 @@ class _BrigthnessState extends State<Brigthness> {
       unfocusedHeight: 35,
       focusedHeight: 45,
       foregroundColor: Colors.white,
-      // backgroundColor: Colors.red,
       shapeBorder: RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(8)),
       ),
-      // onChanged: (value) => setState(() => _value = value),
       onChanged: (value) {
-        print(value);
+        print('value');
         setState(() {
           _value = value;
         });
