@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-// import 'package:uni_links/uni_links.dart';
-import 'dart:async';
-
-// import 'package:firebase_core/firebase_core.dart';
 
 class LedControlScreen extends StatefulWidget {
   @override
@@ -15,6 +11,7 @@ class _LedControlScreenState extends State<LedControlScreen> {
   String nutDoiMau = "";
   String nutNguon = "";
   String tuDongSang = "1";
+  String timeUse = "";
 
   @override
   void initState() {
@@ -44,24 +41,21 @@ class _LedControlScreenState extends State<LedControlScreen> {
     });
   }
 
-  StreamSubscription? _sub;
+  void listenToLedTime() {
+    DatabaseReference ref = FirebaseDatabase.instance.ref("TIME_USE/");
 
-  Future<void> initUniLinks() async {
-    _sub = linkStream.listen((String? link) async {
-      if (link != null) {
-        final uri = Uri.parse(link);
-        final action = uri.queryParameters['action'];
+    ref.onValue.listen((DatabaseEvent event) {
+      DataSnapshot snapshot = event.snapshot;
 
-        if (action != null) {
-          if (action.toUpperCase() == 'ON') {
-            updateNutNguon("ON"); // Bật đèn
-          } else if (action.toUpperCase() == 'OFF') {
-            updateNutNguon("OFF"); // Tắt đèn
-          }
-        }
+      if (snapshot.value != null) {
+        Map<dynamic, dynamic> data =
+            Map<dynamic, dynamic>.from(snapshot.value as Map);
+        setState(() {
+          timeUse = data["timeUse"].toString();
+        });
+      } else {
+        print('That bai');
       }
-    }, onError: (err) {
-      print("Lỗi: $err");
     });
   }
 
@@ -79,20 +73,6 @@ class _LedControlScreenState extends State<LedControlScreen> {
     });
   }
 
-  // void updateNutNguon(String newValue) {
-  //   DatabaseReference ref = FirebaseDatabase.instance.ref("LED_CONTROL");
-
-  //   ref.update(
-  //     {
-  //       "nutNguon": newValue,
-  //     },
-  //   ).then((_) {
-  //     print("Cập nhật nutNguon thành công");
-  //   }).catchError((error) {
-  //     print("Lỗi khi cập nhật: $error");
-  //   });
-  // }
-
   // @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -106,8 +86,9 @@ class _LedControlScreenState extends State<LedControlScreen> {
             Text("Nút đổi màu: $nutDoiMau"),
             Text("Nút nguồn: $nutNguon"),
             Text("Tự động sáng: $tuDongSang"),
+            Text("Thời gian dùng: $timeUse"),
             ElevatedButton(
-                onPressed: () => updateNutNguon("1"), child: Text('Bật đèn')),
+                onPressed: () => updateNutNguon("0"), child: Text('Bật đèn')),
           ],
         ),
       ),
