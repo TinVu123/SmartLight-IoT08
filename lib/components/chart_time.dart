@@ -18,11 +18,10 @@ class _ChartTimeState extends State<ChartTime> {
 
   Future<Map<String, int>> getTimeUseData() async {
     DatabaseReference ref = FirebaseDatabase.instance.ref('TIME_USE');
+    final snapshot = await ref.get();
 
     print('Get data');
     Map<String, int> tempResult = {};
-
-    final snapshot = await ref.get();
 
     if (snapshot.exists) {
       Map<String, dynamic> data =
@@ -90,7 +89,7 @@ class _ChartTimeState extends State<ChartTime> {
           getTimeUseData(), // Mỗi khi rebuild thì lại gọi lại ---> tốn thời gian nên đưa vào initState để chỉ gọi 1 lần
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center();
         } else if (snapshot.hasError) {
           return const Center(child: Text("Lỗi khi tải dữ liệu"));
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -153,11 +152,13 @@ class _ChartTimeState extends State<ChartTime> {
                                       sideTitles:
                                           SideTitles(showTitles: false)),
                                   rightTitles: AxisTitles(
-                                      sideTitles:
-                                          SideTitles(showTitles: false)),
+                                      sideTitles: SideTitles(
+                                    showTitles: false,
+                                  )),
                                   leftTitles: AxisTitles(
-                                      sideTitles:
-                                          SideTitles(showTitles: false)),
+                                      sideTitles: SideTitles(
+                                    showTitles: false,
+                                  )),
                                   bottomTitles: AxisTitles(
                                     sideTitles: SideTitles(
                                       showTitles: true,
