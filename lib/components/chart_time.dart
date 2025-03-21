@@ -10,51 +10,55 @@ class ChartTime extends StatefulWidget {
 }
 
 class _ChartTimeState extends State<ChartTime> {
-  // Lấy dữ liệu từ Firebase: giữ nguyên key là "2025-03-10"
+  @override
+  void initState() {
+    super.initState();
+    getTimeUseData();
+  }
+
   Future<Map<String, int>> getTimeUseData() async {
-    DatabaseReference ref = FirebaseDatabase.instance.ref("TIME_USE");
+    DatabaseReference ref = FirebaseDatabase.instance.ref('TIME_USE');
 
-    DataSnapshot snapshot = await ref.orderByKey().limitToFirst(14).get();
+    print('Get data');
+    Map<String, int> tempResult = {};
 
-    if (snapshot.exists && snapshot.value != null) {
-      Map<dynamic, dynamic> rawData =
-          Map<dynamic, dynamic>.from(snapshot.value as Map);
+    final snapshot = await ref.get();
 
-      // Giữ nguyên key là ngày đầy đủ
-      Map<String, int> timeUseData = rawData.map((key, value) {
-        String dateString = key.toString(); // "2025-03-10"
-        int timeUsed = int.parse(value.toString());
-        return MapEntry(dateString, timeUsed);
-      });
+    if (snapshot.exists) {
+      Map<String, dynamic> data =
+          Map<String, dynamic>.from(snapshot.value as Map);
 
-      // Chuyển Map thành List<MapEntry> để sắp xếp
-      List<MapEntry<String, int>> sortedList = timeUseData.entries.toList();
+      for (var entry in data.entries) {
+        String key = entry.key;
+        dynamic rawValue = entry.value;
 
-      // Sắp xếp theo ngày (tăng dần)
-      sortedList.sort((a, b) {
-        DateTime dateA =
-            DateTime.parse(a.key); // Chuyển chuỗi ngày thành DateTime
-        DateTime dateB = DateTime.parse(b.key);
-        return dateA.compareTo(dateB); // Tăng dần
-        // Để giảm dần, dùng: return dateB.compareTo(dateA);
-      });
+        if (rawValue is int) {
+          tempResult[key] = rawValue;
+        } else {
+          print("Giá trị không phải int: $rawValue");
+        }
+      }
 
-      return sortedList.asMap().map((index, entry) {
-        return MapEntry(entry.key, entry.value);
-      });
-      // return timeUseData;
+      // Sắp xếp theo ngày tăng dần
+      var sortedEntries = tempResult.entries.toList()
+        ..sort(
+            (a, b) => DateTime.parse(b.key).compareTo(DateTime.parse(a.key)));
+
+      Map<String, int> sortedMap = Map.fromEntries(sortedEntries);
+      return sortedMap;
     } else {
+      print("No data exists in TIME_USE.");
       return {};
     }
   }
 
-  // Tạo dữ liệu biểu đồ
   List<BarChartGroupData> generateBarData(
-      List<MapEntry<String, int>> entries, int maxMunites) {
+      List<MapEntry<String, int>> entries, int maxMinutes, int startIndex) {
     List<BarChartGroupData> barGroups = [];
 
-    for (int i = 0; i < entries.length; i++) {
-      double timeUsed = entries[i].value.toDouble();
+    // Chỉ lấy 7 cột cho mỗi page
+    for (int i = 0; i < 6 && (startIndex + i) < entries.length; i++) {
+      double timeUsed = entries[startIndex + i].value.toDouble();
 
       barGroups.add(
         BarChartGroupData(
@@ -64,12 +68,10 @@ class _ChartTimeState extends State<ChartTime> {
               toY: timeUsed,
               color: Colors.lightBlue,
               width: 20,
-              borderRadius: BorderRadius.all(
-                Radius.circular(10),
-              ),
+              borderRadius: BorderRadius.all(Radius.circular(10)),
               backDrawRodData: BackgroundBarChartRodData(
                 show: true,
-                toY: maxMunites + 70, // 24 giờ
+                toY: maxMinutes + 70,
                 color: Colors.grey[200],
               ),
             ),
@@ -77,13 +79,15 @@ class _ChartTimeState extends State<ChartTime> {
         ),
       );
     }
-    return barGroups;
+    // return barGroups;
+    return barGroups.reversed.toList();
   }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Map<String, int>>(
-      future: getTimeUseData(),
+      future:
+          getTimeUseData(), // Mỗi khi rebuild thì lại gọi lại ---> tốn thời gian nên đưa vào initState để chỉ gọi 1 lần
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -97,84 +101,100 @@ class _ChartTimeState extends State<ChartTime> {
         int maxTime = timeUseData.values.reduce((a, b) => a > b ? a : b);
         List<MapEntry<String, int>> entries = timeUseData.entries.toList();
 
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-          child: Card(
-            elevation: 3,
-            color: Colors.white,
-            child: Container(
-              height: 300,
-              width: double.infinity,
-              padding: EdgeInsets.only(top: 0, bottom: 15),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                        child: Text(
-                          'Thời gian học',
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
+        // Tính số lượng page (mỗi page 7 ngày)
+        int pageCount = (entries.length / 7).ceil();
+
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 0),
+            child: Card(
+              elevation: 3,
+              color: Colors.white,
+              child: Container(
+                height: 300,
+                width: double.infinity,
+                padding: EdgeInsets.only(top: 0, bottom: 15),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10.0, vertical: 3),
+                          child: Text(
+                            'Thời gian dùng',
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  Expanded(
-                    // flex: 11,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      reverse: true,
-                      child: SizedBox(
-                        width: entries.length * 56.0,
-                        child: BarChart(
-                          BarChartData(
-                            barGroups: generateBarData(entries, maxTime),
-                            maxY: maxTime + 100,
-                            minY: 0,
-                            titlesData: FlTitlesData(
-                              show: true,
-                              topTitles: AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false)),
-                              rightTitles: AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false)),
-                              leftTitles: AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false)),
-                              bottomTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  getTitlesWidget: (value, meta) {
-                                    int index = value.toInt();
-                                    if (index >= 0 && index < entries.length) {
-                                      String dateStr = entries[index].key;
-                                      DateTime date = DateTime.parse(dateStr);
-                                      return Padding(
-                                        padding:
-                                            const EdgeInsets.only(top: 5.0),
-                                        child: Text("${date.day}",
-                                            style: TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: 16,
-                                            )),
-                                      ); // Trục X: ngày
-                                    }
-                                    return const Text("");
-                                  },
+                      ],
+                    ),
+                    Expanded(
+                      child: PageView.builder(
+                        reverse: true,
+                        itemCount: pageCount,
+                        itemBuilder: (context, pageIndex) {
+                          int startIndex = pageIndex * 7;
+                          return SizedBox(
+                            width: 7 * 56.0, // Chiều rộng cho 7 cột
+                            child: BarChart(
+                              BarChartData(
+                                barGroups: generateBarData(
+                                    entries, maxTime, startIndex),
+                                maxY: maxTime + 100,
+                                minY: 0,
+                                titlesData: FlTitlesData(
+                                  show: true,
+                                  topTitles: AxisTitles(
+                                      sideTitles:
+                                          SideTitles(showTitles: false)),
+                                  rightTitles: AxisTitles(
+                                      sideTitles:
+                                          SideTitles(showTitles: false)),
+                                  leftTitles: AxisTitles(
+                                      sideTitles:
+                                          SideTitles(showTitles: false)),
+                                  bottomTitles: AxisTitles(
+                                    sideTitles: SideTitles(
+                                      showTitles: true,
+                                      getTitlesWidget: (value, meta) {
+                                        int index = startIndex + value.toInt();
+                                        if (index >= 0 &&
+                                            index < entries.length) {
+                                          String dateStr = entries[index].key;
+                                          DateTime date =
+                                              DateTime.parse(dateStr);
+                                          return Padding(
+                                            padding:
+                                                const EdgeInsets.only(top: 5.0),
+                                            child: Text(
+                                              "${date.day}/${date.month}",
+                                              style: TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                        return const Text("");
+                                      },
+                                    ),
+                                  ),
                                 ),
+                                borderData: FlBorderData(show: false),
+                                gridData: FlGridData(show: false),
                               ),
                             ),
-                            borderData: FlBorderData(show: false),
-                            gridData: FlGridData(show: false),
-                          ),
-                        ),
+                          );
+                        },
                       ),
                     ),
-                  )
-                ],
+                  ],
+                ),
               ),
             ),
           ),

@@ -1,5 +1,6 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NotificationManger {
   // Tạo đối tượng FirebaseMessaging
@@ -19,7 +20,13 @@ class NotificationManger {
     final fCMToken = await _firebaseMessaging.getToken();
     final ref =
         FirebaseDatabase.instance.ref('TIME_NOTIFICATION/tokens_device');
-    ref.push().set({fCMToken});
+    // Lưu vào bộ nhớ để không đẩy fcm token lên firebase nhiều lần
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? checkfcm = prefs.getString('fcmtoken');
+    if (checkfcm == null) {
+      ref.push().set({'token': fCMToken});
+      prefs.setString('fcmtoken', '$fCMToken');
+    }
     print('FCM Token: $fCMToken');
 
     // Lắng nghe tin nhắn khi app đang mở (foreground)

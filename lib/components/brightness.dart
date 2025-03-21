@@ -55,6 +55,7 @@ class _SliderExampleState extends State<MySlider> {
             enabledThumbRadius: 10.0), // Tăng kích thước nút trượt
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.max,
         children: [
           Expanded(
             flex: 5,

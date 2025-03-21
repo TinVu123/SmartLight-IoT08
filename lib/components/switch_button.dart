@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:smartlight/service/firebase_realtime.dart';
 
 class MySwitchButton extends StatefulWidget {
   final String type;
@@ -22,7 +23,16 @@ class _SwitchExampleState extends State<MySwitchButton> {
   void initState() {
     super.initState();
     light = widget.state;
-    print('${widget.type}, $light');
+    // print('${widget.type}, $light');
+  }
+
+  void updateTimeNotification(String newValue) {
+    DatabaseReference ref = FirebaseDatabase.instance.ref("TIME_NOTIFICATION");
+    ref.update(
+      {'state_notification': newValue},
+    ).catchError((error) {
+      // print("Lỗi khi cập nhật: $error");
+    });
   }
 
   @override
@@ -31,19 +41,9 @@ class _SwitchExampleState extends State<MySwitchButton> {
     if (oldWidget.state != widget.state) {
       setState(() {
         light = widget.state;
-        print(light);
+        // print(light);
       });
     }
-  }
-
-  void updateNut(String buttonFunction, String newValue) {
-    DatabaseReference ref = FirebaseDatabase.instance.ref("LED_CONTROL/");
-
-    ref.update({buttonFunction: newValue}).then((_) {
-      print("Cập nhật $buttonFunction thành công: $newValue");
-    }).catchError((error) {
-      print("Lỗi khi cập nhật: $error");
-    });
   }
 
   @override
@@ -67,15 +67,11 @@ class _SwitchExampleState extends State<MySwitchButton> {
       thumbColor: const WidgetStatePropertyAll<Color>(Colors.white),
       onChanged: (bool value) {
         if (widget.type == 'light') {
-          updateNut('nutNguon', value ? '1' : '0');
-          print(value);
+          FirebaseManager().updateField('nutNguon', value ? '1' : '0');
         } else if (widget.type == 'brightness') {
-          updateNut('nutTuDongSang', value ? '1' : '0');
-          print(value);
-        } else if (widget.type == 'promodo') {
-          print('${widget.type}: $light');
+          FirebaseManager().updateField('nutTuDongSang', value ? '1' : '0');
         } else if (widget.type == 'notification') {
-          print('${widget.type}: $light');
+          updateTimeNotification(value ? '1' : '0');
         }
       },
     );

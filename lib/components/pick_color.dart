@@ -54,7 +54,7 @@ class _PickerColorState extends State<PickerColor> {
           title: Text(
             'Color',
             style: GoogleFonts.roboto(
-                textStyle: TextStyle(fontSize: 22),
+                textStyle: TextStyle(fontSize: 20),
                 fontWeight: FontWeight.w500,
                 color: Colors.black87),
           ),

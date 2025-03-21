@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-// import 'my_switch_button.dart';
 import 'package:smartlight/components/switch_button.dart';
 
 class CustomCard extends StatelessWidget {
@@ -24,7 +23,9 @@ class CustomCard extends StatelessWidget {
     return Card(
       color: Colors.white,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10.0),
+        padding: const EdgeInsets.symmetric(
+          vertical: 10.0,
+        ),
         child: ListTile(
           leading: Container(
             padding: const EdgeInsets.all(8),
@@ -41,7 +42,7 @@ class CustomCard extends StatelessWidget {
           title: Text(
             title,
             style: GoogleFonts.roboto(
-              textStyle: const TextStyle(fontSize: 22),
+              textStyle: const TextStyle(fontSize: 20),
               fontWeight: FontWeight.w500,
               color: Colors.black87,
             ),
