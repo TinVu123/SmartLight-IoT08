@@ -18,6 +18,24 @@ const int studyTime = 10 * 1000; //Biến lưu thời gian học
 const int breakTime = 5 * 1000; //Biến lưu thời gian nghỉ
 unsigned long startTime = 0;
 
+//Biến lưu thời gian sử dụng đèn và độ sáng trung bình
+bool timeStudy = false;//Biến xác định người dùng tắt đèn chưa để gửi thời gian học
+unsigned long countTimeStudy = 0;//Biến lưu thời gian học tập của người dùng
+int lightBrightness = 0; //Biến lưu cường độ sáng của đèn
+unsigned long sumBrightness = 0;  // Tổng độ sáng đã thay đổi
+unsigned int countBrightness = 0; // Số lần thay đổi độ sáng
+unsigned long totalTimeBrightness = 0; // Tổng thời gian tích lũy cho độ sáng
+unsigned long lastBrightnessUpdate = 0; // Lần cuối cập nhật độ sáng
+
+
+//Biến cho nhấp nháy đèn
+bool isBlinking = false; //Đèn có đang nhấp nháy không
+int blinkCount = 0; //Đếm số lần nhấp nháy
+const int reminderBlinkCount = 5; //Số lần nhấp nháy
+const int reminderBlinkDelay = 350; //Thời gian mỗi lần nhấp nháy (ms)
+unsigned long lastBlinkTime = 0; //Thời điểm nhấp nháy cuối cùng
+bool blinkState = false; //Trạng thái nhấp nháy (bật/tắt)
+
 // Biến chống rung phím
 const int debounceDelay = 50;
 unsigned long lastDebounceTimePower = 0;
@@ -25,6 +43,16 @@ unsigned long lastDebounceTimeColor = 0;
 
 int lastStateButSwitchAuto; //Biến lưu trạng thái (LOW/HIGH) gần nhất của nút tự động sáng
 int lastStateButChangeColor; //Biến lưu trạng thái (LOW/HIGH) gần nhất của nút chuyển đổi màu đèn
+
+//Biến lưu giá trị cũ để so sánh
+String data_cu = "";
+int power_cu = 0;
+int lightBrightness_cu = 0;
+String data_firebase_cu = "";
+String data_firebase_cu_convert ="";
+
+//Set thời gian cập nhật serial
+unsigned long lastUpdateTime = 0;
 
 void setup() {
     pinMode(camBienAnhSang, INPUT);
@@ -46,11 +74,10 @@ void setup() {
 
     digitalWrite(ledWhite, LOW);
     digitalWrite(ledYellow, LOW);
+
+    startTime = millis(); // Khởi tạo thời gian bắt đầu học
 }
 
-String data_cu = "";
-int power_cu = 0;
-unsigned long lastUpdateTime = 0;
 
 void loop() {
     // Đọc dữ liệu từ Serial
@@ -61,10 +88,16 @@ void loop() {
     
     if (power == 0) {
         isActive = false;
+        capNhatThoiGianHoc();
         capNhat();
     }
     else {
-        isActive = true;
+        // if (!isActive) { // Khi bật lại đèn, reset thời gian học
+            isActive = true;
+            timeStudy = false;
+            isStudying = true;
+            startTime = millis();
+        // }
 
         // Nếu tự động sáng tắt thì độ sáng của đèn dựa vào nút nguồn
         if (autoLight == false) {
@@ -77,10 +110,11 @@ void loop() {
     }
 
     xuLyNutNhan();
+    xuLyThoiGianHocNghi(); // Thêm xử lý thời gian học nghỉ 
     dieuKhienDen();
     
     // Giảm tần suất cập nhật để tránh quá tải serial
-    if (millis() - lastUpdateTime >= 1000) {
+    if (millis() - lastUpdateTime >= 500) {
         lastUpdateTime = millis();
         capNhat();
     }
@@ -89,15 +123,47 @@ void loop() {
     delay(50);  // Delay ngắn chỉ để tránh tải CPU quá cao
 }
 
+
+
 void capNhat() {
     int brightness = autoLight ? constrain(map(analogRead(camBienAnhSang), 0, 1023, 255, 0), 0, 255) : giaTriSangTuApp;
     String data = "D*" + String(isActive ? 1 : 0) + "*" + String(ledColor ? 1 : 0) + "*" + String(autoLight ? 1 : 0) +  "*" + String(brightness) + "\n";
-    if (data != data_cu) {
+    String data_firebase_cu_convert = "D*" + data_firebase_cu.substring(0, 1) + "*" + data_firebase_cu.substring(1, 2) + "*" + data_firebase_cu.substring(2, 3) + "*" + data_firebase_cu.substring(3) + "\n";
+
+    if (data != data_cu && data != data_firebase_cu_convert) {
         data_cu = data;
-        Serial.print(data);
+//        Serial.println("Check: " + data_firebase_cu_convert);
+
+//      Serial.print("Gui di: ");
+        Serial.println(data);
         Serial.flush(); // Đảm bảo dữ liệu được gửi đi
     }
 }
+
+//Cập nhật thời gian học và cường độ sáng trung bình
+void capNhatThoiGianHoc(){
+    if(timeStudy == false){
+        countTimeStudy = millis();
+
+         // Chỉ tính cường độ sáng trung bình khi có thời gian tổng hợp
+        if (totalTimeBrightness > 0) {
+            lightBrightness = sumBrightness / totalTimeBrightness;
+        } else {
+            lightBrightness = 0; // Nếu không có dữ liệu, gán về 0
+        }
+        
+        String dataTimeStudy = "T*" + String(countTimeStudy) + "\n";
+        String cuongDoSang = "I*" + String(lightBrightness) + "\n";
+        
+        Serial.println("Cuong do sang: " + lightBrightness);
+        Serial.println(dataTimeStudy);
+        Serial.println(cuongDoSang);
+        Serial.flush(); // Đảm bảo dữ liệu được gửi đi
+        timeStudy = true;
+    }
+    
+}
+
 
 void docDuLieuSerial() {
     // Đọc dữ liệu từ Serial
@@ -130,6 +196,9 @@ void docDuLieuSerial() {
             // Chỉ cập nhật khi có thay đổi
             if (oldIsActive != isActive || oldLedColor != ledColor || 
                 oldAutoLight != autoLight || oldGiaTriSangTuApp != giaTriSangTuApp) {
+                isStudying = true;
+                startTime = millis();
+                data_firebase_cu = data;
                 Serial.print("Du lieu tu Firebase: ");
                 Serial.println(data);
                 dieuKhienDen();  // Cập nhật đèn ngay lập tức khi có thay đổi
@@ -141,7 +210,6 @@ void docDuLieuSerial() {
 void xuLyNutNhan() {
     // Xử lý nút tự động sáng
     int stateButSwitchAuto = digitalRead(switchAuto); //Lấy trạng thái hiện tại của nút switch
-
     if (stateButSwitchAuto == LOW && lastStateButSwitchAuto == HIGH && (millis() - lastDebounceTimePower > debounceDelay)) {
         autoLight = !autoLight;
         Serial.print("Tu dong sang: ");
@@ -164,20 +232,86 @@ void xuLyNutNhan() {
 void dieuKhienDen() {
     // Điều khiển đèn
     if (isActive) {
-        int brightness;
-        if (autoLight) {
-            brightness = constrain(map(analogRead(camBienAnhSang), 0, 1023, 255, 0), 0, 255);
-            analogWrite(A4, 255);
+        if (isBlinking) {
+        nhapNhayDen(); // Nhấp nháy đèn khi chuyển trạng thái
         } else {
-            brightness = giaTriSangTuApp;
-            analogWrite(A4, 0);
-        }
+            int brightness;
+            if (autoLight == true) {
+                brightness = constrain(map(analogRead(camBienAnhSang), 0, 1023, 255, 0), 0, 255);
+                analogWrite(A4, 255);
+            } else {
+                brightness = giaTriSangTuApp;
+                analogWrite(A4, 0);
+            }
 
-        analogWrite(ledWhite, ledColor ? brightness : 0);
-        analogWrite(ledYellow, ledColor ? 0 : brightness);
-        
-    } else {
+            unsigned long currentTime = millis();
+        if (brightness != lightBrightness_cu) {
+            // Tính thời gian độ sáng trước đó đã tồn tại
+            if (lastBrightnessUpdate > 0) {
+                unsigned long duration = currentTime - lastBrightnessUpdate;
+                sumBrightness += lightBrightness_cu * duration; // Cộng dồn độ sáng theo thời gian
+                totalTimeBrightness += duration;
+            }
+
+            // Cập nhật lại biến
+            lightBrightness_cu = brightness;
+            lastBrightnessUpdate = currentTime;
+        }
+            
+            analogWrite(ledWhite, ledColor ? brightness : 0);
+            analogWrite(ledYellow, ledColor ? 0 : brightness);
+            
+        }
+    }
+    else {
         digitalWrite(ledWhite, LOW);
         digitalWrite(ledYellow, LOW);
+    }
+}
+
+void xuLyThoiGianHocNghi() {
+    if (!isActive) return; //Không xử lý nếu đèn tắt
+
+    unsigned long currentMillis = millis();
+
+    if (isBlinking) {
+        if (blinkCount >= reminderBlinkCount * 2) { //Nhấp nháy đủ lần thì chuyển sang nghỉ
+            isBlinking = false;
+            isStudying = false;
+            startTime = currentMillis;
+            Serial.println("Da nhap nhay du so lan. Bat dau thoi gian nghi!");
+        }
+    } else if (isStudying) {
+        if (currentMillis - startTime >= studyTime) { //Hết 10 phút học
+            isBlinking = true;
+            blinkCount = 0;
+            lastBlinkTime = currentMillis;
+            blinkState = false;
+            Serial.println("Da hoc du 10 phut. Den bat dau nhap nhay!");
+        }
+    } else {
+        if (currentMillis - startTime >= breakTime) { //Hết 5 phút nghỉ
+            isStudying = true;
+            startTime = currentMillis;
+            Serial.println("Da nghi du 5 phut. Quay lai che do hoc!");
+        }
+    }
+}
+
+void nhapNhayDen() {
+    unsigned long currentMillis = millis();
+    if (currentMillis - lastBlinkTime >= reminderBlinkDelay) {
+        lastBlinkTime = currentMillis;
+        blinkState = !blinkState;
+        blinkCount++;
+
+        int brightness = autoLight ? constrain(map(analogRead(camBienAnhSang), 0, 1023, 255, 0), 0, 255) : giaTriSangTuApp;
+        if (blinkState) {
+            analogWrite(ledWhite, ledColor ? brightness : 0);
+            analogWrite(ledYellow, ledColor ? 0 : brightness);
+        } else {
+            digitalWrite(ledWhite, LOW);
+            digitalWrite(ledYellow, LOW);
+        }
     }
 }
