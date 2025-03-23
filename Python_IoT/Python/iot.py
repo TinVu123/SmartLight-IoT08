@@ -116,27 +116,28 @@ def main():
                             cuongDoSang = int(parts[1])  # Nếu là số nguyên
                             # cuongDoSang = float(parts[1])  # Nếu có số thập phân
 
-                            print(cuongDoSang)
+                            if cuongDoSang > 0:
+                                print(cuongDoSang)
 
-                            ngay_hien_tai = datetime.today().date()
-                            print(ngay_hien_tai)
+                                ngay_hien_tai = datetime.today().date()
+                                print(ngay_hien_tai)
 
-                            du_lieu_do_sang = firebase_db.get(FIREBASE_PATH_SAVE_LIGHT_INTENSITY, None)
+                                du_lieu_do_sang = firebase_db.get(FIREBASE_PATH_SAVE_LIGHT_INTENSITY, None)
 
-                            # Đọc dữ liệu từ Firebase, đảm bảo là số
-                            light_intensity_on_firebase = du_lieu_do_sang.get(str(ngay_hien_tai), 0)
-                            print("Độ sáng trên firebase: " + str(light_intensity_on_firebase))
-                            print("Cường độ sáng: " + str(cuongDoSang))
-                            light_intensity_on_firebase = int(light_intensity_on_firebase)
+                                # Đọc dữ liệu từ Firebase, đảm bảo là số
+                                light_intensity_on_firebase = du_lieu_do_sang.get(str(ngay_hien_tai), 0)
+                                print("Độ sáng trên firebase: " + str(light_intensity_on_firebase))
+                                print("Cường độ sáng: " + str(cuongDoSang))
+                                light_intensity_on_firebase = int(light_intensity_on_firebase)
 
-                            # Cộng giá trị mới
-                            light_intensity_on_firebase = cuongDoSang
-                            light_intensity_on_firebase = round(light_intensity_on_firebase, 2)
-                            print(light_intensity_on_firebase)
+                                # Cộng giá trị mới
+                                light_intensity_on_firebase = cuongDoSang
+                                light_intensity_on_firebase = round(light_intensity_on_firebase, 2)
+                                print(light_intensity_on_firebase)
 
-                            # Cập nhật lại Firebase
-                            firebase_db.put(FIREBASE_PATH_SAVE_LIGHT_INTENSITY, str(ngay_hien_tai), int(light_intensity_on_firebase))
-                            print("Đã cập nhật dữ liệu lên Firebase")
+                                # Cập nhật lại Firebase
+                                firebase_db.put(FIREBASE_PATH_SAVE_LIGHT_INTENSITY, str(ngay_hien_tai), int(light_intensity_on_firebase))
+                                print("Đã cập nhật dữ liệu lên Firebase")
                 # time.sleep(0.5)
                 cong_tac = 1 #Mở công tắc để bên khác tiếp tục xử lý
             
