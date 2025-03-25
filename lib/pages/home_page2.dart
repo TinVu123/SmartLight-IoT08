@@ -19,12 +19,51 @@ class _HomePageState extends State<HomePage2> {
   bool buttonBrightAuto = false;
   late final DatabaseReference _ref;
   late final Stream<DatabaseEvent> _stream;
+  List<int> lightInten = []; // Khởi tạo mặc định
+  Map<String, int> timeUse = {}; // Khởi tạo mặc định
+
+  Future<void> getLightInten() async {
+    try {
+      DatabaseReference refLight =
+          FirebaseDatabase.instance.ref('LIGHT_INTENSITY');
+      final snapshot = await refLight.get();
+      if (snapshot.exists && snapshot.value is List) {
+        setState(() {
+          lightInten = List<int>.from(snapshot.value as List);
+        });
+      }
+    } catch (e) {
+      print("Lỗi khi lấy dữ liệu LIGHT_INTENSITY: $e");
+    }
+  }
+
+  Future<void> getTimeUseData() async {
+    try {
+      DatabaseReference ref = FirebaseDatabase.instance.ref('TIME_USE');
+      final snapshot = await ref.get();
+      if (snapshot.value != null && snapshot.value is Map) {
+        setState(() {
+          timeUse = Map<String, int>.from(snapshot.value as Map);
+        });
+      }
+    } catch (e) {
+      print("Lỗi khi lấy dữ liệu TIME_USE: $e");
+    }
+  }
+
+  Future<void> initializeData() async {
+    await getLightInten();
+    await getTimeUseData();
+    print('Light Intensity: $lightInten');
+    print('Time Use: $timeUse');
+  }
 
   @override
   void initState() {
     super.initState();
     _ref = FirebaseDatabase.instance.ref("LED_CONTROL");
     _stream = _ref.onValue;
+    initializeData();
   }
 
   Widget _buildContent(Map<dynamic, dynamic> data) {
@@ -36,7 +75,10 @@ class _HomePageState extends State<HomePage2> {
         padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
         child: Column(
           children: [
-            const ChartTime(),
+            ChartTime(
+              lightInten: lightInten,
+              timeUseData: timeUse,
+            ),
             const SizedBox(height: 15),
             _buildBrightnessSlider(),
             const SizedBox(height: 5),
@@ -108,16 +150,13 @@ class _HomePageState extends State<HomePage2> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-
           if (snapshot.hasError) {
             return const Center(child: Text('Đã xảy ra lỗi!'));
           }
-
           final dynamic snapshotValue = snapshot.data?.snapshot.value;
           if (snapshotValue == null) {
             return const Center(child: Text('Không có dữ liệu!'));
           }
-
           return _buildContent(
               Map<dynamic, dynamic>.from(snapshotValue as Map));
         },
